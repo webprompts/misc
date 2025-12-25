@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Verbalized Sampling Prompt — Misc</title>
+    <meta name="description" content="A Stanford research-backed prompting technique that boosts LLM creativity by 1.6-2x. Add ~20 words to restore the diversity lost after RLHF alignment.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-card: #1c1c21;
+            --bg-code: #0d0d0f;
+            --accent-primary: #10b981;
+            --accent-secondary: #34d399;
+            --accent-tertiary: #6ee7b7;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Nav */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 3rem;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        /* Article header */
+        .article-header {
+            margin-bottom: 3rem;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .article-date {
+            color: var(--text-muted);
+        }
+
+        .article-tag {
+            padding: 0.25rem 0.75rem;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-primary);
+            border-radius: 100px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .article-title {
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .article-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Article content */
+        .article-content {
+            font-size: 1.05rem;
+        }
+
+        .article-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 3rem 0 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .article-content h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .article-content ul, .article-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        /* Before/After comparison */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .comparison-box {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .comparison-box.before {
+            border-top: 3px solid #ef4444;
+        }
+
+        .comparison-box.after {
+            border-top: 3px solid var(--accent-primary);
+        }
+
+        .comparison-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .comparison-box.before .comparison-label {
+            color: #ef4444;
+        }
+
+        .comparison-box.after .comparison-label {
+            color: var(--accent-primary);
+        }
+
+        .comparison-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Explanation boxes */
+        .explanation-box {
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .explanation-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .explanation-box p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        /* Flow diagram */
+        .flow-diagram {
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .flow-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .flow-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .flow-num {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--bg-primary);
+            flex-shrink: 0;
+        }
+
+        .flow-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Callout */
+        .callout {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .callout p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .callout strong {
+            color: var(--accent-primary);
+        }
+
+        /* Research box */
+        .research-box {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .research-title {
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .research-box p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        /* Variants */
+        .variants-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .variant-card {
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .variant-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .variant-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Prompt section */
+        .prompt-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .prompt-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .copy-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-1px);
+        }
+
+        .copy-btn.copied {
+            background: #3b82f6;
+        }
+
+        .prompt-box {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .prompt-box pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .prompt-box .highlight {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .variants-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .article-title {
+                font-size: 1.5rem;
+            }
+
+            .prompt-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <div class="nav-inner">
+                <a href="../" class="nav-back">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    All Posts
+                </a>
+                <span class="nav-brand">misc.</span>
+            </div>
+        </nav>
+
+        <article>
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-date">December 2024</span>
+                    <span class="article-tag">Research</span>
+                </div>
+                <h1 class="article-title">The Verbalized Sampling Prompt</h1>
+                <p class="article-subtitle">
+                    A Stanford research-backed technique that boosts LLM creativity by 1.6-2x. Add ~20 words to any prompt to restore the diversity lost after RLHF alignment.
+                </p>
+            </header>
+
+            <div class="article-content">
+                <p>
+                    Modern LLMs are less creative than they could be. Post-training alignment (RLHF) makes them helpful and safe — but it also causes <strong>mode collapse</strong>, where the model favors a narrow set of predictable responses over diverse, creative ones.
+                </p>
+
+                <p>
+                    Verbalized Sampling is a training-free prompting technique that bypasses this limitation. No fine-tuning required — just change how you ask.
+                </p>
+
+                <h2>The Results</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">1.6-2x</div>
+                        <div class="stat-label">Creativity boost over direct prompting</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">25.7%</div>
+                        <div class="stat-label">Higher human-rated diversity</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">66.8%</div>
+                        <div class="stat-label">Lost creativity restored</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Training required</div>
+                    </div>
+                </div>
+
+                <h2>The Technique</h2>
+
+                <div class="comparison">
+                    <div class="comparison-box before">
+                        <div class="comparison-label">Direct Prompting</div>
+                        <div class="comparison-text">Tell me a joke.</div>
+                    </div>
+                    <div class="comparison-box after">
+                        <div class="comparison-label">Verbalized Sampling</div>
+                        <div class="comparison-text">Generate 5 responses with their corresponding probabilities. Tell me a joke.</div>
+                    </div>
+                </div>
+
+                <p>
+                    That's it. By asking for a <strong>distribution</strong> instead of a single instance, you force the model to tap into the diverse knowledge it learned during pre-training — before alignment narrowed its outputs.
+                </p>
+
+                <h2>Why This Works</h2>
+
+                <div class="explanation-box">
+                    <div class="explanation-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        The Problem: Typicality Bias
+                    </div>
+                    <p>During RLHF, human annotators rate LLM responses. But humans naturally prefer answers that are familiar, easy to read, and predictable — even when creative alternatives are equally good. This "typicality bias" gets baked into the reward model, which then aggressively sharpens the LLM's probability distribution toward safe, boring outputs.</p>
+                </div>
+
+                <div class="flow-diagram">
+                    <div class="flow-title">How Verbalized Sampling Bypasses Mode Collapse</div>
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <div class="flow-num">1</div>
+                            <div class="flow-text">Direct prompt → Aligned personality activates → Most reinforced answer</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-num">2</div>
+                            <div class="flow-text">VS prompt → Model asked for distribution → Must access full knowledge</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-num">3</div>
+                            <div class="flow-text">Pre-training weights activated → Diverse responses surface</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <p><strong>Key insight:</strong> The LLM still has two personalities after alignment — the original pre-trained model with rich, diverse knowledge, and the safety-focused aligned model. Verbalized Sampling acts as a "mental switch" to access the original.</p>
+                </div>
+
+                <h2>Variants</h2>
+
+                <div class="variants-grid">
+                    <div class="variant-card">
+                        <div class="variant-name">VS-CoT</div>
+                        <div class="variant-desc">Verbalized Sampling + Chain-of-Thought for complex reasoning with diversity</div>
+                    </div>
+                    <div class="variant-card">
+                        <div class="variant-name">VS-Multi</div>
+                        <div class="variant-desc">Request multiple diverse outputs in a single generation</div>
+                    </div>
+                </div>
+
+                <h2>When to Use This</h2>
+
+                <ul>
+                    <li><strong>Creative writing</strong> — stories, jokes, metaphors, analogies</li>
+                    <li><strong>Brainstorming</strong> — idea generation, product names, taglines</li>
+                    <li><strong>Problem solving</strong> — when you want multiple approaches, not just the obvious one</li>
+                    <li><strong>Content variety</strong> — social posts, email variants, headlines</li>
+                    <li><strong>Any task where "predictable" = bad</strong></li>
+                </ul>
+
+                <h2>Example Applications</h2>
+
+                <div class="explanation-box">
+                    <div class="explanation-title">Creative Writing</div>
+                    <p>"Generate 5 responses with their corresponding probabilities. Write a one-sentence horror story."</p>
+                </div>
+
+                <div class="explanation-box">
+                    <div class="explanation-title">Brainstorming</div>
+                    <p>"Generate 5 responses with their corresponding probabilities. Give me a startup idea for the education space."</p>
+                </div>
+
+                <div class="explanation-box">
+                    <div class="explanation-title">Marketing Copy</div>
+                    <p>"Generate 5 responses with their corresponding probabilities. Write a tagline for a productivity app."</p>
+                </div>
+
+                <div class="research-box">
+                    <div class="research-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                        Stanford Research
+                    </div>
+                    <p>This technique comes from Stanford researchers studying mode collapse in aligned LLMs. The paper demonstrates that verbalized sampling significantly enhances diversity (1.6–2.1x) while maintaining or improving quality.</p>
+                </div>
+
+                <div class="prompt-section">
+                    <div class="prompt-header">
+                        <h2 class="prompt-title">The Template</h2>
+                        <button class="copy-btn" onclick="copyPrompt()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+
+                    <div class="prompt-box">
+                        <pre><span class="highlight">Generate 5 responses with their corresponding probabilities.</span> [Your actual prompt here]</pre>
+                    </div>
+
+                    <p style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                        Just prepend those 8 words to any prompt. The model will output multiple options with probability estimates, giving you access to its full creative range instead of just the most "aligned" answer.
+                    </p>
+                </div>
+            </div>
+        </article>
+
+        <footer>
+            <div class="footer-nav">
+                <a href="../" class="footer-link">← All Posts</a>
+                <a href="https://github.com/webprompts/misc" class="footer-link">GitHub</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function copyPrompt() {
+            const promptText = `Generate 5 responses with their corresponding probabilities. [Your actual prompt here]`;
+
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.classList.add('copied');
+                btn.querySelector('span').textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.querySelector('span').textContent = 'Copy';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
