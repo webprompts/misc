@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The AI Delegation Framework — Misc</title>
+    <meta name="description" content="What to delegate to AI coding assistants and what to keep. Based on Anthropic's internal research: 132 surveys, 53 interviews, 200k transcripts.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-card: #1c1c21;
+            --bg-code: #0d0d0f;
+            --accent-primary: #14b8a6;
+            --accent-secondary: #2dd4bf;
+            --accent-tertiary: #5eead4;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Nav */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 3rem;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        /* Article header */
+        .article-header {
+            margin-bottom: 3rem;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .article-date {
+            color: var(--text-muted);
+        }
+
+        .article-tag {
+            padding: 0.25rem 0.75rem;
+            background: rgba(20, 184, 166, 0.15);
+            color: var(--accent-primary);
+            border-radius: 100px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .article-title {
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .article-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Article content */
+        .article-content {
+            font-size: 1.05rem;
+        }
+
+        .article-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 3rem 0 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .article-content h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .article-content ul, .article-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        /* Criteria cards */
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .criteria-card {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .criteria-card.delegate {
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .criteria-card.keep {
+            border-left: 3px solid #f97316;
+        }
+
+        .criteria-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--bg-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .criteria-card.keep .criteria-num {
+            background: #f97316;
+        }
+
+        .criteria-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.4rem;
+        }
+
+        .criteria-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .criteria-quote {
+            font-size: 0.8rem;
+            color: var(--accent-secondary);
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+
+        /* Trust progression */
+        .progression-box {
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .progression-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .progression-steps {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .progression-step {
+            padding: 0.5rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .progression-step.active {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .progression-arrow {
+            color: var(--text-muted);
+        }
+
+        /* Paradox box */
+        .paradox-box {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .paradox-title {
+            font-weight: 700;
+            color: #f87171;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .paradox-box p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .paradox-box ul {
+            margin: 0.75rem 0 0 0;
+            padding-left: 1.25rem;
+        }
+
+        .paradox-box li {
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+        }
+
+        /* Callout */
+        .callout {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .callout p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .callout strong {
+            color: var(--accent-primary);
+        }
+
+        /* Full-stack effect */
+        .effect-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .effect-card {
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .effect-team {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .effect-use {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Summary */
+        .summary-box {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(45, 212, 191, 0.05));
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-title {
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .summary-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .summary-column h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-column ul {
+            margin: 0;
+            padding-left: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .summary-column li {
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        /* Sources */
+        .sources {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sources-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .sources a {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .sources a:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .criteria-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .effect-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .progression-steps {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .progression-arrow {
+                transform: rotate(90deg);
+                align-self: center;
+            }
+
+            .article-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <div class="nav-inner">
+                <a href="../" class="nav-back">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    All Posts
+                </a>
+                <span class="nav-brand">misc.</span>
+            </div>
+        </nav>
+
+        <article>
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-date">December 2024</span>
+                    <span class="article-tag">Research</span>
+                </div>
+                <h1 class="article-title">The AI Delegation Framework</h1>
+                <p class="article-subtitle">
+                    What to delegate to AI coding assistants and what to keep for yourself. Distilled from Anthropic's internal research: 132 surveys, 53 interviews, 200k transcripts.
+                </p>
+            </header>
+
+            <div class="article-content">
+                <p>
+                    Anthropic studied how their own engineers use Claude. The findings reveal clear patterns about <strong>what to delegate, what to keep, and how trust evolves over time</strong>.
+                </p>
+
+                <h2>The Numbers</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">60%</div>
+                        <div class="stat-label">of work uses Claude</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">50%</div>
+                        <div class="stat-label">productivity boost</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">27%</div>
+                        <div class="stat-label">new work that wouldn't happen otherwise</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">2x</div>
+                        <div class="stat-label">YoY increase in both metrics</div>
+                    </div>
+                </div>
+
+                <h2>The 6 Delegation Criteria</h2>
+
+                <p>Engineers delegate tasks that match these criteria:</p>
+
+                <div class="criteria-grid">
+                    <div class="criteria-card delegate">
+                        <div class="criteria-num">1</div>
+                        <div class="criteria-title">Easily Verifiable</div>
+                        <div class="criteria-desc">You can quickly check if the output is correct.</div>
+                        <div class="criteria-quote">"It's amazing for everything where validation effort isn't large compared to creation effort."</div>
+                    </div>
+                    <div class="criteria-card delegate">
+                        <div class="criteria-num">2</div>
+                        <div class="criteria-title">Low Stakes</div>
+                        <div class="criteria-desc">Code quality isn't critical. Throwaway or research code.</div>
+                        <div class="criteria-quote">"If it's throwaway debug or research code, it goes straight to Claude."</div>
+                    </div>
+                    <div class="criteria-card delegate">
+                        <div class="criteria-num">3</div>
+                        <div class="criteria-title">Well-Defined</div>
+                        <div class="criteria-desc">Self-contained tasks with clear boundaries.</div>
+                        <div class="criteria-quote">"If a subcomponent is sufficiently decoupled from the rest, I'll get Claude to take a stab."</div>
+                    </div>
+                    <div class="criteria-card delegate">
+                        <div class="criteria-num">4</div>
+                        <div class="criteria-title">Boring / Repetitive</div>
+                        <div class="criteria-desc">Tasks you're resisting or don't enjoy.</div>
+                        <div class="criteria-quote">"The more excited I am to do the task, the more likely I am to not use Claude."</div>
+                    </div>
+                    <div class="criteria-card delegate">
+                        <div class="criteria-num">5</div>
+                        <div class="criteria-title">Outside Your Expertise</div>
+                        <div class="criteria-desc">Low context for you, but low overall complexity.</div>
+                        <div class="criteria-quote">"I don't know Git or Linux very well... Claude covers for my lack of experience."</div>
+                    </div>
+                    <div class="criteria-card delegate">
+                        <div class="criteria-num">6</div>
+                        <div class="criteria-title">Faster to Prompt</div>
+                        <div class="criteria-desc">Tasks where prompting beats doing it yourself.</div>
+                        <div class="criteria-quote">"If I anticipate it'll take me less than 10 minutes... I'm probably not going to bother using Claude."</div>
+                    </div>
+                </div>
+
+                <h2>What to Keep</h2>
+
+                <div class="criteria-grid">
+                    <div class="criteria-card keep">
+                        <div class="criteria-num">1</div>
+                        <div class="criteria-title">High-Level Design</div>
+                        <div class="criteria-desc">Architecture decisions, strategic thinking, system design.</div>
+                    </div>
+                    <div class="criteria-card keep">
+                        <div class="criteria-num">2</div>
+                        <div class="criteria-title">"Taste" Decisions</div>
+                        <div class="criteria-desc">Choices requiring organizational context or judgment.</div>
+                    </div>
+                    <div class="criteria-card keep">
+                        <div class="criteria-num">3</div>
+                        <div class="criteria-title">High-Context Tasks</div>
+                        <div class="criteria-desc">Work where you have deep knowledge that's hard to transfer.</div>
+                    </div>
+                    <div class="criteria-card keep">
+                        <div class="criteria-num">4</div>
+                        <div class="criteria-title">Critical Code Quality</div>
+                        <div class="criteria-desc">Production code where standards matter most.</div>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <p><strong>The boundary is a moving target.</strong> Engineers regularly renegotiate what they delegate as models improve. Design/planning usage grew from 1% to 10% in six months.</p>
+                </div>
+
+                <h2>The Trust Progression</h2>
+
+                <div class="progression-box">
+                    <div class="progression-title">How engineers build trust over time</div>
+                    <div class="progression-steps">
+                        <div class="progression-step">Basic questions</div>
+                        <span class="progression-arrow">→</span>
+                        <div class="progression-step">Unfamiliar domains</div>
+                        <span class="progression-arrow">→</span>
+                        <div class="progression-step">Familiar tasks</div>
+                        <span class="progression-arrow">→</span>
+                        <div class="progression-step active">Trust the suggestion</div>
+                    </div>
+                </div>
+
+                <p>
+                    One engineer compared it to Google Maps: "At first I used it only for routes I didn't know. Today I use it all the time, even for my daily commute. If it says to take a different way, I just trust it."
+                </p>
+
+                <h2>The Supervision Paradox</h2>
+
+                <div class="paradox-box">
+                    <div class="paradox-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        The skills you need to supervise AI may atrophy from using AI
+                    </div>
+                    <p>
+                        Effectively using Claude requires supervision. Supervising Claude requires the very coding skills that may atrophy from AI overuse.
+                    </p>
+                    <ul>
+                        <li>"When producing output is so easy, it gets harder to actually take the time to learn something."</li>
+                        <li>"If I were earlier in my career, it would take deliberate effort to grow my own abilities rather than blindly accepting model output."</li>
+                    </ul>
+                </div>
+
+                <p>
+                    Some engineers combat this by deliberately practicing without AI: "Every once in a while, even if I know Claude can nail a problem, I will not ask it to. It helps me keep myself sharp."
+                </p>
+
+                <h2>The Full-Stack Effect</h2>
+
+                <p>
+                    AI enables everyone to work outside their core expertise. Different teams use Claude to augment their skills:
+                </p>
+
+                <div class="effect-grid">
+                    <div class="effect-card">
+                        <div class="effect-team">Security</div>
+                        <div class="effect-use">Analyzing unfamiliar codebases</div>
+                    </div>
+                    <div class="effect-card">
+                        <div class="effect-team">Alignment & Safety</div>
+                        <div class="effect-use">Building front-end data visualizations</div>
+                    </div>
+                    <div class="effect-card">
+                        <div class="effect-team">Backend Engineers</div>
+                        <div class="effect-use">Creating complex UIs</div>
+                    </div>
+                    <div class="effect-card">
+                        <div class="effect-team">Non-Technical Staff</div>
+                        <div class="effect-use">Debugging and data science</div>
+                    </div>
+                </div>
+
+                <h2>The "Papercuts" Pattern</h2>
+
+                <p>
+                    <strong>8.6% of Claude Code tasks</strong> are small quality-of-life fixes that would typically be deprioritized: refactoring for maintainability, building small tools, fixing minor issues. These add up to larger productivity gains over time.
+                </p>
+
+                <h2>TL;DR</h2>
+
+                <div class="summary-box">
+                    <div class="summary-title">The Framework</div>
+                    <div class="summary-columns">
+                        <div class="summary-column">
+                            <h4>Delegate if:</h4>
+                            <ul>
+                                <li>Easily verifiable</li>
+                                <li>Low stakes</li>
+                                <li>Well-defined</li>
+                                <li>Boring / repetitive</li>
+                                <li>Outside expertise, low complexity</li>
+                                <li>Faster to prompt than do</li>
+                            </ul>
+                        </div>
+                        <div class="summary-column">
+                            <h4>Keep if:</h4>
+                            <ul>
+                                <li>High-level design</li>
+                                <li>Requires "taste"</li>
+                                <li>High context needed</li>
+                                <li>Critical code quality</li>
+                                <li>Strategic decisions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sources">
+                    <div class="sources-title">Source</div>
+                    <a href="https://anthropic.com/research/how-ai-is-transforming-work-at-anthropic" target="_blank">Anthropic: How AI is transforming work at Anthropic (Dec 2025)</a>
+                </div>
+            </div>
+        </article>
+
+        <footer>
+            <div class="footer-nav">
+                <a href="../" class="footer-link">← All Posts</a>
+                <a href="https://github.com/webprompts/misc" class="footer-link">GitHub</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
