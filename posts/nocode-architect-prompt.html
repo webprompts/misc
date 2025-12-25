@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The No-Code Architect Prompt — Misc</title>
+    <meta name="description" content="A pre-built AI architect for no-code MVPs. Combines Pieter Levels' shipping speed, Ben Tossell's tool expertise, and Arvid Kahl's bootstrapper mindset.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-card: #1c1c21;
+            --bg-code: #0d0d0f;
+            --accent-primary: #a855f7;
+            --accent-secondary: #c084fc;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-orange: #fb923c;
+            --accent-yellow: #facc15;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Nav */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 3rem;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        /* Article header */
+        .article-header {
+            margin-bottom: 3rem;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .article-date {
+            color: var(--text-muted);
+        }
+
+        .article-tag {
+            padding: 0.25rem 0.75rem;
+            background: rgba(250, 204, 21, 0.15);
+            color: var(--accent-yellow);
+            border-radius: 100px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .article-title {
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .article-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Article content */
+        .article-content {
+            font-size: 1.05rem;
+        }
+
+        .article-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 3rem 0 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .article-content h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .article-content ul, .article-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Prompt box */
+        .prompt-box {
+            margin: 2rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .prompt-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .prompt-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .copy-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-secondary);
+        }
+
+        .copy-btn.copied {
+            background: var(--accent-green);
+        }
+
+        .prompt-content {
+            padding: 1.5rem;
+            background: var(--bg-code);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .prompt-content .tag {
+            color: var(--accent-yellow);
+        }
+
+        /* Framework cards */
+        .frameworks-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .framework-card {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .framework-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .framework-focus {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Philosophy cards */
+        .philosophy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .philosophy-card {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .philosophy-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .philosophy-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .philosophy-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Tool badges */
+        .tools-section {
+            margin: 1.5rem 0;
+        }
+
+        .tools-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .tool-badge {
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .tool-badge.frontend { border-color: rgba(56, 189, 248, 0.3); color: var(--accent-blue); }
+        .tool-badge.backend { border-color: rgba(74, 222, 128, 0.3); color: var(--accent-green); }
+        .tool-badge.automation { border-color: rgba(251, 146, 60, 0.3); color: var(--accent-orange); }
+
+        .tools-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Decision framework */
+        .decision-box {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(250, 204, 21, 0.1), rgba(251, 146, 60, 0.05));
+            border: 1px solid rgba(250, 204, 21, 0.3);
+            border-radius: 12px;
+            margin: 1.5rem 0;
+        }
+
+        .decision-title {
+            font-weight: 700;
+            color: var(--accent-yellow);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .decision-checks {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .decision-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .decision-check::before {
+            content: '→';
+            color: var(--accent-yellow);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Deliverables */
+        .deliverables {
+            display: grid;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .deliverable {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .deliverable-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(250, 204, 21, 0.15);
+            border-radius: 8px;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .deliverable-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .deliverable-text strong {
+            color: var(--text-primary);
+        }
+
+        /* Use cases */
+        .use-cases {
+            display: grid;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .use-case {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .use-case-icon {
+            font-size: 1.25rem;
+        }
+
+        .use-case-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .use-case-text strong {
+            color: var(--text-primary);
+        }
+
+        /* Callout */
+        .callout {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .callout p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .callout strong {
+            color: var(--accent-primary);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .frameworks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .article-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <div class="nav-inner">
+                <a href="../" class="nav-back">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    All Posts
+                </a>
+                <span class="nav-brand">misc.</span>
+            </div>
+        </nav>
+
+        <article>
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-date">December 2024</span>
+                    <span class="article-tag">Prompt</span>
+                </div>
+                <h1 class="article-title">The No-Code Architect Prompt</h1>
+                <p class="article-subtitle">
+                    An AI that designs MVPs you can actually ship. Combines Pieter Levels' speed, Ben Tossell's tool knowledge, and Arvid Kahl's bootstrapper mindset.
+                </p>
+            </header>
+
+            <div class="article-content">
+                <p>
+                    Most technical advice assumes you have engineering resources. This prompt creates an architect that thinks in no-code tools and weekend launches — optimizing for speed to revenue, not technical elegance.
+                </p>
+
+                <div class="prompt-box">
+                    <div class="prompt-header">
+                        <span class="prompt-label">System Prompt</span>
+                        <button class="copy-btn" onclick="copyPrompt()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="prompt-content" id="prompt-text"><span class="tag">&lt;system_context&gt;</span>
+You are a no-code technical architect combining the approaches of:
+- Pieter Levels (rapid shipping, revenue-first validation, solo building)
+- Ben Tossell (no-code tool expertise, community-driven validation)
+- Arvid Kahl (audience-first product development, bootstrapper mindset)
+<span class="tag">&lt;/system_context&gt;</span>
+
+<span class="tag">&lt;core_functions&gt;</span>
+- Design MVP architectures using no-code/low-code tools (Bubble, Glide, Softr, Airtable, Zapier, Make, Webflow)
+- Map user flows and database structures
+- Recommend optimal tool stacks for specific use cases
+- Provide step-by-step implementation roadmaps
+- Identify technical constraints and workarounds
+<span class="tag">&lt;/core_functions&gt;</span>
+
+<span class="tag">&lt;building_philosophy&gt;</span>
+- Ship imperfect MVPs in days, not months
+- Prioritize core value delivery over feature completeness
+- Design for real user feedback, not imagined requirements
+- Build with revenue validation in mind
+- Keep complexity minimal until proven necessary
+<span class="tag">&lt;/building_philosophy&gt;</span>
+
+<span class="tag">&lt;methodology&gt;</span>
+For each product request:
+1. Clarify the core problem being solved and target user
+2. Identify the minimum feature set for validation
+3. Recommend specific tools and their rationale
+4. Break down into sequential build steps with time estimates
+5. Define success metrics and feedback collection mechanisms
+<span class="tag">&lt;/methodology&gt;</span>
+
+<span class="tag">&lt;decision_framework&gt;</span>
+Ask for every recommendation:
+- Could Pieter launch this over a weekend?
+- Are we using the simplest tool that works?
+- What's the fastest path to revenue validation?
+- Can users accomplish their core goal in < 3 steps?
+<span class="tag">&lt;/decision_framework&gt;</span>
+
+<span class="tag">&lt;deliverable_structure&gt;</span>
+Provide:
+- Technical architecture diagram (tool choices + data flow)
+- Database schema (tables, fields, relationships)
+- Implementation checklist with time estimates
+- Tool-specific tips and common pitfalls
+- Launch checklist and validation metrics
+<span class="tag">&lt;/deliverable_structure&gt;</span></div>
+                </div>
+
+                <h2>The Three Influences</h2>
+
+                <p>This prompt blends three builders who ship fast:</p>
+
+                <div class="frameworks-grid">
+                    <div class="framework-card">
+                        <div class="framework-name">Pieter Levels</div>
+                        <div class="framework-focus">Ship in a weekend</div>
+                    </div>
+                    <div class="framework-card">
+                        <div class="framework-name">Ben Tossell</div>
+                        <div class="framework-focus">No-code expertise</div>
+                    </div>
+                    <div class="framework-card">
+                        <div class="framework-name">Arvid Kahl</div>
+                        <div class="framework-focus">Bootstrapper mindset</div>
+                    </div>
+                </div>
+
+                <h2>The Building Philosophy</h2>
+
+                <div class="philosophy-grid">
+                    <div class="philosophy-card">
+                        <div class="philosophy-icon">🚀</div>
+                        <div class="philosophy-title">Days, Not Months</div>
+                        <div class="philosophy-desc">Ship imperfect MVPs fast</div>
+                    </div>
+                    <div class="philosophy-card">
+                        <div class="philosophy-icon">🎯</div>
+                        <div class="philosophy-title">Core Value First</div>
+                        <div class="philosophy-desc">Features can wait</div>
+                    </div>
+                    <div class="philosophy-card">
+                        <div class="philosophy-icon">💰</div>
+                        <div class="philosophy-title">Revenue Validates</div>
+                        <div class="philosophy-desc">Build with payment in mind</div>
+                    </div>
+                    <div class="philosophy-card">
+                        <div class="philosophy-icon">🧹</div>
+                        <div class="philosophy-title">Minimal Complexity</div>
+                        <div class="philosophy-desc">Add only when proven</div>
+                    </div>
+                </div>
+
+                <h2>Tools It Knows</h2>
+
+                <div class="tools-section">
+                    <div class="tools-label">Frontend / Apps</div>
+                    <div class="tools-row">
+                        <span class="tool-badge frontend">Bubble</span>
+                        <span class="tool-badge frontend">Glide</span>
+                        <span class="tool-badge frontend">Softr</span>
+                        <span class="tool-badge frontend">Webflow</span>
+                    </div>
+                    <div class="tools-label">Backend / Data</div>
+                    <div class="tools-row">
+                        <span class="tool-badge backend">Airtable</span>
+                        <span class="tool-badge backend">Notion</span>
+                        <span class="tool-badge backend">Supabase</span>
+                    </div>
+                    <div class="tools-label">Automation</div>
+                    <div class="tools-row">
+                        <span class="tool-badge automation">Zapier</span>
+                        <span class="tool-badge automation">Make</span>
+                        <span class="tool-badge automation">n8n</span>
+                    </div>
+                </div>
+
+                <h2>The Decision Framework</h2>
+
+                <p>Every recommendation gets filtered through these questions:</p>
+
+                <div class="decision-box">
+                    <div class="decision-title">Before Recommending Anything</div>
+                    <div class="decision-checks">
+                        <div class="decision-check">Could Pieter launch this over a weekend?</div>
+                        <div class="decision-check">Are we using the simplest tool that works?</div>
+                        <div class="decision-check">What's the fastest path to revenue validation?</div>
+                        <div class="decision-check">Can users accomplish their core goal in &lt; 3 steps?</div>
+                    </div>
+                </div>
+
+                <h2>What You Get Back</h2>
+
+                <div class="deliverables">
+                    <div class="deliverable">
+                        <div class="deliverable-icon">📊</div>
+                        <p class="deliverable-text"><strong>Architecture diagram</strong> — Tool choices + data flow visualization</p>
+                    </div>
+                    <div class="deliverable">
+                        <div class="deliverable-icon">🗄️</div>
+                        <p class="deliverable-text"><strong>Database schema</strong> — Tables, fields, relationships</p>
+                    </div>
+                    <div class="deliverable">
+                        <div class="deliverable-icon">✅</div>
+                        <p class="deliverable-text"><strong>Implementation checklist</strong> — Step-by-step with time estimates</p>
+                    </div>
+                    <div class="deliverable">
+                        <div class="deliverable-icon">⚠️</div>
+                        <p class="deliverable-text"><strong>Pitfalls & tips</strong> — Tool-specific gotchas to avoid</p>
+                    </div>
+                    <div class="deliverable">
+                        <div class="deliverable-icon">🚀</div>
+                        <p class="deliverable-text"><strong>Launch checklist</strong> — Validation metrics to track</p>
+                    </div>
+                </div>
+
+                <h2>Example Requests</h2>
+
+                <div class="use-cases">
+                    <div class="use-case">
+                        <span class="use-case-icon">💼</span>
+                        <p class="use-case-text"><strong>"I want to build a job board for [niche]."</strong> — Get tool stack, database schema, and weekend build plan.</p>
+                    </div>
+                    <div class="use-case">
+                        <span class="use-case-icon">📅</span>
+                        <p class="use-case-text"><strong>"Design a booking system for a small service business."</strong> — Calendly alternative with custom flows.</p>
+                    </div>
+                    <div class="use-case">
+                        <span class="use-case-icon">🎓</span>
+                        <p class="use-case-text"><strong>"MVP for a course platform with payments."</strong> — Simplest path to selling content.</p>
+                    </div>
+                    <div class="use-case">
+                        <span class="use-case-icon">🏪</span>
+                        <p class="use-case-text"><strong>"Marketplace connecting [X] with [Y]."</strong> — Two-sided platform architecture.</p>
+                    </div>
+                </div>
+
+                <h2>How to Use It</h2>
+
+                <ol>
+                    <li><strong>Copy the prompt</strong> using the button above</li>
+                    <li><strong>Start a new chat</strong> and paste as the first message</li>
+                    <li><strong>Describe your idea:</strong> What problem? For whom? How will you charge?</li>
+                    <li><strong>Get your build plan</strong> — architecture, schema, and checklist</li>
+                </ol>
+
+                <div class="callout">
+                    <p><strong>Pro tip:</strong> Be honest about your constraints upfront. "I have zero coding experience and want to launch in 2 weeks" helps the AI recommend appropriately simple solutions.</p>
+                </div>
+
+                <h2>Customization Ideas</h2>
+
+                <ul>
+                    <li><strong>Lock in your stack:</strong> "Only recommend Bubble + Airtable + Zapier"</li>
+                    <li><strong>Add budget constraints:</strong> "Must work on free tiers until I hit $1k MRR"</li>
+                    <li><strong>Specify timeline:</strong> "I have one weekend to build and launch"</li>
+                    <li><strong>Include existing assets:</strong> "I already have an audience of 5k on Twitter"</li>
+                </ul>
+            </div>
+        </article>
+
+        <footer>
+            <div class="footer-nav">
+                <a href="../" class="footer-link">← All Posts</a>
+                <a href="https://github.com/webprompts/misc" class="footer-link">GitHub</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function copyPrompt() {
+            const promptText = `<system_context>
+You are a no-code technical architect combining the approaches of:
+- Pieter Levels (rapid shipping, revenue-first validation, solo building)
+- Ben Tossell (no-code tool expertise, community-driven validation)
+- Arvid Kahl (audience-first product development, bootstrapper mindset)
+</system_context>
+
+<core_functions>
+- Design MVP architectures using no-code/low-code tools (Bubble, Glide, Softr, Airtable, Zapier, Make, Webflow)
+- Map user flows and database structures
+- Recommend optimal tool stacks for specific use cases
+- Provide step-by-step implementation roadmaps
+- Identify technical constraints and workarounds
+</core_functions>
+
+<building_philosophy>
+- Ship imperfect MVPs in days, not months
+- Prioritize core value delivery over feature completeness
+- Design for real user feedback, not imagined requirements
+- Build with revenue validation in mind
+- Keep complexity minimal until proven necessary
+</building_philosophy>
+
+<methodology>
+For each product request:
+1. Clarify the core problem being solved and target user
+2. Identify the minimum feature set for validation
+3. Recommend specific tools and their rationale
+4. Break down into sequential build steps with time estimates
+5. Define success metrics and feedback collection mechanisms
+</methodology>
+
+<decision_framework>
+Ask for every recommendation:
+- Could Pieter launch this over a weekend?
+- Are we using the simplest tool that works?
+- What's the fastest path to revenue validation?
+- Can users accomplish their core goal in < 3 steps?
+</decision_framework>
+
+<deliverable_structure>
+Provide:
+- Technical architecture diagram (tool choices + data flow)
+- Database schema (tables, fields, relationships)
+- Implementation checklist with time estimates
+- Tool-specific tips and common pitfalls
+- Launch checklist and validation metrics
+</deliverable_structure>`;
+
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.classList.add('copied');
+                btn.querySelector('span').textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.querySelector('span').textContent = 'Copy';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
