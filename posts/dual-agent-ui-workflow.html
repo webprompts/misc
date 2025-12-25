@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Dual-Agent Workflow for Data-Heavy UIs — Misc</title>
+    <meta name="description" content="A surprisingly effective AI workflow for building UIs with lots of data. Pair a UX Agent with a Product Engineer agent for better results.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-card: #1c1c21;
+            --bg-code: #0d0d0f;
+            --accent-primary: #a855f7;
+            --accent-secondary: #c084fc;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-orange: #fb923c;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Nav */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 3rem;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        /* Article header */
+        .article-header {
+            margin-bottom: 3rem;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .article-date {
+            color: var(--text-muted);
+        }
+
+        .article-tag {
+            padding: 0.25rem 0.75rem;
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--accent-primary);
+            border-radius: 100px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .article-title {
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .article-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Article content */
+        .article-content {
+            font-size: 1.05rem;
+        }
+
+        .article-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 3rem 0 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .article-content h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .article-content ul, .article-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .article-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            padding: 0.2rem 0.4rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--accent-blue);
+        }
+
+        .article-content pre {
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .article-content pre code {
+            padding: 0;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        /* Callout */
+        .callout {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .callout p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .callout strong {
+            color: var(--accent-primary);
+        }
+
+        /* Step boxes */
+        .step-box {
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-primary);
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .step-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .step-box p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        /* Agent cards */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-card {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            border-top: 3px solid var(--border-color);
+        }
+
+        .agent-card.ux {
+            border-top-color: var(--accent-blue);
+        }
+
+        .agent-card.engineer {
+            border-top-color: var(--accent-green);
+        }
+
+        .agent-name {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .agent-card.ux .agent-name {
+            color: var(--accent-blue);
+        }
+
+        .agent-card.engineer .agent-name {
+            color: var(--accent-green);
+        }
+
+        .agent-role {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Flow diagram */
+        .flow-diagram {
+            padding: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .flow-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .flow-item {
+            padding: 0.75rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .flow-item.ux {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .flow-item.engineer {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .flow-item.output {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+
+        .flow-arrow {
+            color: var(--text-muted);
+        }
+
+        /* Output box */
+        .output-box {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(56, 189, 248, 0.05));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .output-title {
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .output-box ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .output-box li {
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .agents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .flow-steps {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+
+            .article-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <div class="nav-inner">
+                <a href="../" class="nav-back">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    All Posts
+                </a>
+                <span class="nav-brand">misc.</span>
+            </div>
+        </nav>
+
+        <article>
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-date">December 2024</span>
+                    <span class="article-tag">Workflow</span>
+                </div>
+                <h1 class="article-title">The Dual-Agent Workflow for Data-Heavy UIs</h1>
+                <p class="article-subtitle">
+                    A surprisingly effective pattern for building interfaces with lots of data. Pair a UX Agent with a Product Engineer — one designs, one validates.
+                </p>
+            </header>
+
+            <div class="article-content">
+                <p>
+                    When you're building a UI that displays a lot of data, the challenge isn't just "what data to show" — it's <strong>discovering which views are actually useful</strong>. This workflow uses two AI agents to explore that space systematically.
+                </p>
+
+                <div class="callout">
+                    <p><strong>The core insight:</strong> One agent proposes data views, another validates them against real data. This back-and-forth surfaces features you hadn't thought of.</p>
+                </div>
+
+                <h2>The Setup</h2>
+
+                <div class="step-box">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Create a Query Endpoint</div>
+                    </div>
+                    <p>Build an API endpoint that can handle read queries — something like <code>/api/query</code>. This is how the agents will explore your data.</p>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Document Your Schema</div>
+                    </div>
+                    <p>Create a Markdown file explaining the important tables and what the data represents. Point to your schema file (Drizzle schema works great for this).</p>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Launch Two Agents</div>
+                    </div>
+                    <p>Write a prompt that kicks off both agents with clear roles and a collaboration protocol.</p>
+                </div>
+
+                <h2>The Two Agents</h2>
+
+                <div class="agents-grid">
+                    <div class="agent-card ux">
+                        <div class="agent-name">UX Agent</div>
+                        <p class="agent-role">Identifies useful data views, designs how they fit together into a cohesive UI experience.</p>
+                    </div>
+                    <div class="agent-card engineer">
+                        <div class="agent-name">Product Engineer</div>
+                        <p class="agent-role">Writes queries, runs curl commands, validates data makes sense for proposed use cases.</p>
+                    </div>
+                </div>
+
+                <h3>The Critical Rule</h3>
+                <p>
+                    <strong>Before the UX Agent can use any data view, it must get approval from the Product Engineer.</strong> This creates a validation loop that catches bad assumptions early.
+                </p>
+
+                <h2>The Flow</h2>
+
+                <div class="flow-diagram">
+                    <div class="flow-steps">
+                        <div class="flow-item ux">UX proposes view</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-item engineer">Engineer validates</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-item ux">UX refines</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-item output">Document</div>
+                    </div>
+                </div>
+
+                <h2>The Output</h2>
+
+                <p>The UX Agent creates a Markdown document containing:</p>
+
+                <div class="output-box">
+                    <div class="output-title">Generated Documentation</div>
+                    <ul>
+                        <li>The raw queries that power each view</li>
+                        <li>Why each view is useful (the reasoning)</li>
+                        <li>How the views can be used in the UI</li>
+                    </ul>
+                </div>
+
+                <h2>Why This Works</h2>
+
+                <p>
+                    By the end of this process, you'll likely discover <strong>useful features and data views you hadn't thought of</strong>. The UX agent explores creatively while the engineer keeps it grounded in reality.
+                </p>
+
+                <p>
+                    The documentation becomes a reference when designing more complex UIs. You can even use it to instruct another agent to translate raw queries into ORM queries behind well-defined methods.
+                </p>
+
+                <h2>Example Prompt Structure</h2>
+
+<pre><code>You are two agents collaborating on UI design for [App Name].
+
+**UX Agent**: Your job is to identify useful data views and design
+how they fit into a cohesive experience. Before using any view,
+you must get validation from the Product Engineer.
+
+**Product Engineer**: Your job is to write queries, test them via
+curl against /api/query, and validate the data makes sense.
+
+Schema reference: [link to schema.md]
+API endpoint: POST /api/query
+
+Begin by having UX Agent propose 3 initial data views...</code></pre>
+
+                <div class="callout">
+                    <p><strong>Pro tip:</strong> Start with broad exploration ("What are the most interesting aggregations?") before narrowing to specific features.</p>
+                </div>
+
+                <h2>When to Use This</h2>
+
+                <ul>
+                    <li>Dashboards with lots of metrics</li>
+                    <li>Admin panels for complex data</li>
+                    <li>Analytics interfaces</li>
+                    <li>Any UI where you're not sure what views users need</li>
+                </ul>
+
+                <p>
+                    The pattern scales — you can add more specialized agents (Data Analyst, Security Reviewer) as complexity grows.
+                </p>
+            </div>
+        </article>
+
+        <footer>
+            <div class="footer-nav">
+                <a href="../" class="footer-link">← All Posts</a>
+                <a href="https://github.com/webprompts/misc" class="footer-link">GitHub</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
