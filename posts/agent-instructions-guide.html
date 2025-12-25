@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The CLAUDE.md & AGENTS.md Guide — Misc</title>
+    <meta name="description" content="How to write effective instructions for AI coding agents. Best practices for CLAUDE.md and AGENTS.md based on research from 2,500+ repositories.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-card: #1c1c21;
+            --bg-code: #0d0d0f;
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #a78bfa;
+            --accent-tertiary: #c4b5fd;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Nav */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 3rem;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        /* Article header */
+        .article-header {
+            margin-bottom: 3rem;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .article-date {
+            color: var(--text-muted);
+        }
+
+        .article-tag {
+            padding: 0.25rem 0.75rem;
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-primary);
+            border-radius: 100px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .article-title {
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .article-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Article content */
+        .article-content {
+            font-size: 1.05rem;
+        }
+
+        .article-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 3rem 0 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .article-content h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .article-content ul, .article-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .article-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            padding: 0.2rem 0.4rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--accent-secondary);
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        /* Comparison table */
+        .comparison-table {
+            width: 100%;
+            margin-bottom: 2rem;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-table th {
+            background: var(--bg-card);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
+        .comparison-table td {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .file-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+        }
+
+        /* Insight box */
+        .insight-box {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-left: 3px solid #ef4444;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .insight-title {
+            font-weight: 700;
+            color: #f87171;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-box p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .insight-box code {
+            background: rgba(0,0,0,0.3);
+        }
+
+        /* Principle boxes */
+        .principle-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .principle-card {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .principle-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.75rem;
+        }
+
+        .principle-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .principle-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Six areas */
+        .areas-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .area-item {
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* Code block */
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .code-block .comment {
+            color: var(--text-muted);
+        }
+
+        .code-block .folder {
+            color: var(--accent-secondary);
+        }
+
+        /* Callout */
+        .callout {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .callout p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .callout strong {
+            color: var(--accent-primary);
+        }
+
+        /* Tools grid */
+        .tools-section {
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .tools-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .tools-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tool-tag {
+            padding: 0.4rem 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Summary box */
+        .summary-box {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(167, 139, 250, 0.05));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-title {
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .summary-box ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .summary-box li {
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-primary);
+        }
+
+        .sources {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sources-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .sources a {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .sources a:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stats-grid .stat-card:last-child {
+                grid-column: span 2;
+            }
+
+            .principle-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .areas-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .article-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <div class="nav-inner">
+                <a href="../" class="nav-back">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    All Posts
+                </a>
+                <span class="nav-brand">misc.</span>
+            </div>
+        </nav>
+
+        <article>
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-date">December 2024</span>
+                    <span class="article-tag">Guide</span>
+                </div>
+                <h1 class="article-title">The CLAUDE.md & AGENTS.md Guide</h1>
+                <p class="article-subtitle">
+                    How to write effective instructions for AI coding agents. Based on research from 2,500+ repositories and the teams behind Claude Code, Copilot, and Codex.
+                </p>
+            </header>
+
+            <div class="article-content">
+                <p>
+                    AI coding agents are stateless. They know nothing about your codebase at the start of each session. <strong>CLAUDE.md</strong> and <strong>AGENTS.md</strong> are how you onboard them — a README for machines.
+                </p>
+
+                <h2>Two Files, Same Purpose</h2>
+
+                <table class="comparison-table">
+                    <tr>
+                        <th>File</th>
+                        <th>Used By</th>
+                        <th>Notes</th>
+                    </tr>
+                    <tr>
+                        <td><span class="file-badge">CLAUDE.md</span></td>
+                        <td>Claude Code</td>
+                        <td>Anthropic's proprietary format</td>
+                    </tr>
+                    <tr>
+                        <td><span class="file-badge">AGENTS.md</span></td>
+                        <td>40+ tools</td>
+                        <td>Open standard under Linux Foundation</td>
+                    </tr>
+                </table>
+
+                <p>
+                    AGENTS.md emerged in 2025 as the open alternative. It's now used by <strong>60,000+ open-source projects</strong> and supported by Copilot, Codex, Cursor, Gemini CLI, Zed, and more.
+                </p>
+
+                <h2>The Numbers</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">150-200</div>
+                        <div class="stat-label">Max instructions LLMs reliably follow</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">~50</div>
+                        <div class="stat-label">Instructions already in Claude Code's system prompt</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">&lt;300</div>
+                        <div class="stat-label">Recommended max lines in your file</div>
+                    </div>
+                </div>
+
+                <h2>The Hidden Problem</h2>
+
+                <div class="insight-box">
+                    <div class="insight-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        Claude often ignores your CLAUDE.md
+                    </div>
+                    <p>
+                        Claude Code injects a hidden system reminder: <code>"this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant."</code> The more irrelevant instructions you add, the more likely Claude ignores the whole file.
+                    </p>
+                </div>
+
+                <h2>The Core Principle</h2>
+
+                <p>
+                    Your instructions file should answer three questions:
+                </p>
+
+                <ul>
+                    <li><strong>WHAT</strong> — Tech stack, project structure, where things live</li>
+                    <li><strong>WHY</strong> — Purpose of the project and its parts</li>
+                    <li><strong>HOW</strong> — Commands to build, test, lint, deploy</li>
+                </ul>
+
+                <h2>Six Areas to Cover</h2>
+
+                <p>Analysis of 2,500+ repositories shows top-tier agent files cover:</p>
+
+                <div class="areas-grid">
+                    <div class="area-item">Commands</div>
+                    <div class="area-item">Testing</div>
+                    <div class="area-item">Project Structure</div>
+                    <div class="area-item">Code Style</div>
+                    <div class="area-item">Git Workflow</div>
+                    <div class="area-item">Boundaries</div>
+                </div>
+
+                <h2>Best Practices</h2>
+
+                <div class="principle-grid">
+                    <div class="principle-card">
+                        <div class="principle-num">1</div>
+                        <div class="principle-title">Less is More</div>
+                        <div class="principle-desc">Include only universally applicable instructions. HumanLayer's CLAUDE.md is under 60 lines.</div>
+                    </div>
+                    <div class="principle-card">
+                        <div class="principle-num">2</div>
+                        <div class="principle-title">Commands Early</div>
+                        <div class="principle-desc">Put <code>npm test</code>, <code>npm run build</code>, <code>pytest -v</code> at the top. Include flags, not just tool names.</div>
+                    </div>
+                    <div class="principle-card">
+                        <div class="principle-num">3</div>
+                        <div class="principle-title">Code Over Words</div>
+                        <div class="principle-desc">One real code snippet showing your style beats three paragraphs describing it.</div>
+                    </div>
+                    <div class="principle-card">
+                        <div class="principle-num">4</div>
+                        <div class="principle-title">Be Specific</div>
+                        <div class="principle-desc">"React 18 with TypeScript, Vite, and Tailwind CSS" not "React project." Include versions.</div>
+                    </div>
+                    <div class="principle-card">
+                        <div class="principle-num">5</div>
+                        <div class="principle-title">Define Boundaries</div>
+                        <div class="principle-desc">Tell agents what to never touch: secrets, vendor directories, production configs.</div>
+                    </div>
+                    <div class="principle-card">
+                        <div class="principle-num">6</div>
+                        <div class="principle-title">Progressive Disclosure</div>
+                        <div class="principle-desc">Keep detailed docs in separate files. Reference them. Let agents read only what they need.</div>
+                    </div>
+                </div>
+
+                <h2>Progressive Disclosure Pattern</h2>
+
+                <p>Don't cram everything into one file. Create a docs folder:</p>
+
+                <div class="code-block">
+                    <pre><span class="folder">agent_docs/</span>
+  ├── building_the_project.md
+  ├── running_tests.md
+  ├── code_conventions.md
+  ├── service_architecture.md
+  ├── database_schema.md
+  └── deployment.md</pre>
+                </div>
+
+                <p>
+                    In your CLAUDE.md/AGENTS.md, list these files with brief descriptions. Tell the agent to read relevant ones before starting work.
+                </p>
+
+                <div class="callout">
+                    <p><strong>Prefer pointers to copies.</strong> Don't paste code snippets — they become stale. Use <code>file:line</code> references to point to authoritative context.</p>
+                </div>
+
+                <h2>Monorepo Support</h2>
+
+                <p>
+                    AGENTS.md supports hierarchy. Place files in subdirectories — the closest one to the edited file takes precedence. OpenAI's main repo has <strong>88 AGENTS.md files</strong>.
+                </p>
+
+                <div class="code-block">
+                    <pre><span class="folder">repo/</span>
+  ├── AGENTS.md           <span class="comment"># root instructions</span>
+  ├── <span class="folder">packages/</span>
+  │   ├── <span class="folder">api/</span>
+  │   │   └── AGENTS.md   <span class="comment"># API-specific</span>
+  │   └── <span class="folder">web/</span>
+  │       └── AGENTS.md   <span class="comment"># web-specific</span></pre>
+                </div>
+
+                <h2>What NOT to Do</h2>
+
+                <ul>
+                    <li><strong>Don't use agents as linters.</strong> Use actual linters and formatters — they're faster and cheaper. Set up a pre-commit hook instead.</li>
+                    <li><strong>Don't auto-generate your file.</strong> <code>/init</code> creates bloated files. Craft it carefully — it's your highest leverage point.</li>
+                    <li><strong>Don't include code style paragraphs.</strong> LLMs are in-context learners. If your code follows patterns, agents will pick them up from examples.</li>
+                    <li><strong>Don't add task-specific hotfixes.</strong> Instructions that only apply sometimes will cause the whole file to be ignored.</li>
+                </ul>
+
+                <h2>AGENTS.md Tool Support</h2>
+
+                <div class="tools-section">
+                    <div class="tools-title">40+ Platforms</div>
+                    <div class="tools-list">
+                        <span class="tool-tag">GitHub Copilot</span>
+                        <span class="tool-tag">OpenAI Codex</span>
+                        <span class="tool-tag">Cursor</span>
+                        <span class="tool-tag">Gemini CLI</span>
+                        <span class="tool-tag">Zed</span>
+                        <span class="tool-tag">Aider</span>
+                        <span class="tool-tag">Warp</span>
+                        <span class="tool-tag">Devin</span>
+                        <span class="tool-tag">Windsurf</span>
+                        <span class="tool-tag">Factory</span>
+                        <span class="tool-tag">Amp</span>
+                        <span class="tool-tag">Jules</span>
+                        <span class="tool-tag">RooCode</span>
+                        <span class="tool-tag">Phoenix</span>
+                    </div>
+                </div>
+
+                <h2>TL;DR</h2>
+
+                <div class="summary-box">
+                    <div class="summary-title">The Rules</div>
+                    <ul>
+                        <li>Keep it under 300 lines (ideally under 60)</li>
+                        <li>Cover: commands, testing, structure, style, git, boundaries</li>
+                        <li>Put executable commands at the top with flags</li>
+                        <li>Use code examples, not explanations</li>
+                        <li>Be specific about your stack and versions</li>
+                        <li>Use progressive disclosure for detailed docs</li>
+                        <li>Use linters and formatters, not LLMs</li>
+                        <li>Don't auto-generate — craft it manually</li>
+                    </ul>
+                </div>
+
+                <div class="sources">
+                    <div class="sources-title">Sources</div>
+                    <a href="https://humanlayer.dev/blog/writing-a-good-claude-md" target="_blank">HumanLayer: Writing a good CLAUDE.md</a>
+                    <a href="https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/" target="_blank">GitHub Blog: How to write a great agents.md</a>
+                    <a href="https://agents.md" target="_blank">AGENTS.md Official Specification</a>
+                </div>
+            </div>
+        </article>
+
+        <footer>
+            <div class="footer-nav">
+                <a href="../" class="footer-link">← All Posts</a>
+                <a href="https://github.com/webprompts/misc" class="footer-link">GitHub</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
